@@ -1,3 +1,5 @@
+import kotlin.math.max
+
 const val RED = "red"
 const val GREEN = "green"
 const val BLUE = "blue"
@@ -6,12 +8,10 @@ data class Game(val id: Int, val playedHands: List<SetOfCubes>) {
     fun isPossible(limit: SetOfCubes): Boolean =
             playedHands.all { it.isPossible(limit) }
 
-    private val minimumSetOfCubes =
-            SetOfCubes(
-                    playedHands.maxOf { it.red },
-                    playedHands.maxOf { it.green },
-                    playedHands.maxOf { it.blue }
-            )
+    private val minimumSetOfCubes = playedHands
+            .fold(SetOfCubes(0, 0, 0)) { acc, next ->
+                acc max next
+            }
 
     val minimumPower = minimumSetOfCubes.power
 
@@ -26,6 +26,9 @@ data class SetOfCubes(val red: Int, val green: Int, val blue: Int) {
             red <= limit.red && green <= limit.green && blue <= limit.blue
 
     val power = red * green * blue
+
+    infix fun max(other: SetOfCubes) =
+            SetOfCubes(max(red, other.red), max(green, other.green), max(blue, other.blue))
 }
 
 fun SetOfCubes(text: String) = text.split(", ").map { it.trim() }.fold(emptyMap<String, Int>()) { acc, next ->
