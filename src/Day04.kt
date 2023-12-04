@@ -17,15 +17,19 @@ fun main() {
             .filter { it > 0 }
             .sumOf { 2f.pow(it - 1).toInt() }
 
-    fun part2(input: List<String>) = input.getAmountOfWinners()
-            .foldIndexed(MutableList(input.size) { 1 }) { cardNumber, acc, next ->
-                val numberOfTickets = acc[cardNumber]
-                for (i in 1..next) {
-                    acc[cardNumber + i] = acc[cardNumber + i] + numberOfTickets
-                }
-                acc
+    fun List<Int>.getExtraTicketsFor(id: Int) = mapIndexed { index, i -> index to i }
+            .subList((id - max()).coerceAtLeast(0), id)
+            .mapNotNull { (index, won) ->
+                index.takeIf { won >= id - index }
             }
-            .sum()
+
+    fun part2(input: List<String>) = input.getAmountOfWinners().let { winners ->
+        List(winners.size) {
+            winners.getExtraTicketsFor(it)
+        }.fold(emptyList<Int>()) { totalTickets, extraTicketsWon ->
+            totalTickets + (extraTicketsWon.sumOf { totalTickets[it] } + 1)
+        }
+    }.sum()
 
     val testInput = readInput("Day04Test")
     check(part1(testInput) == 13)
