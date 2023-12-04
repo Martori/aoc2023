@@ -17,13 +17,21 @@ fun main() {
             .filter { it > 0 }
             .sumOf { 2f.pow(it - 1).toInt() }
 
+    fun part2(input: List<String>) = input.getAmountOfWinners()
+            .foldIndexed(MutableList(input.size) { 1 }) { cardNumber, acc, wins ->
+                for (i in 1..wins) {
+                    acc[cardNumber + i] += acc[cardNumber]
+                }
+                acc
+            }.sum()
+
     fun List<Int>.getExtraTicketsFor(id: Int) = mapIndexed { index, i -> index to i }
             .subList((id - max()).coerceAtLeast(0), id)
             .mapNotNull { (index, won) ->
                 index.takeIf { won >= id - index }
             }
 
-    fun part2(input: List<String>) = input.getAmountOfWinners().let { winners ->
+    fun part2Functional(input: List<String>) = input.getAmountOfWinners().let { winners ->
         List(winners.size) {
             winners.getExtraTicketsFor(it)
         }.fold(emptyList<Int>()) { totalTickets, extraTicketsWon ->
@@ -31,22 +39,13 @@ fun main() {
         }
     }.sum()
 
-    fun part2Imperative(input: List<String>) = input.getAmountOfWinners()
-            .foldIndexed(MutableList(input.size) { 1 }) { cardNumber, acc, next ->
-                for (i in 1..next) {
-                    acc[cardNumber + i] = acc[cardNumber + i] + acc[cardNumber]
-                }
-                acc
-            }
-            .sum()
-
     val testInput = readInput("Day04Test")
     check(part1(testInput) == 13)
+    check(part2Functional(testInput) == 30)
     check(part2(testInput) == 30)
-    check(part2Imperative(testInput) == 30)
 
     val input = readInput("Day04")
     part1(input).println()
+    part2Functional(input).println()
     part2(input).println()
-    part2Imperative(input).println()
 }
