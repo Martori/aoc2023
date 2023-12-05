@@ -1,14 +1,14 @@
 data class Almanac(
     val seeds: List<Long> = emptyList(),
-    val maps: List<AlmanacMap> = emptyList()
+    val categoryMappers: List<CategoryMapper> = emptyList()
 ) {
     private val seedsAsRanges = seeds.chunked(2).map { (s, l) -> s..<s + l }
     fun mapSeedsToLocations() = seeds.map {
-        maps.fold(it) { acc, almanacMap -> almanacMap.mapItem(acc) }
+        categoryMappers.fold(it) { acc, almanacMap -> almanacMap.mapItem(acc) }
     }
 
     fun mapSeedRangesToLocationRanges() = seedsAsRanges.flatMap { range ->
-        maps.fold(listOf(range)) { acc, next ->
+        categoryMappers.fold(listOf(range)) { acc, next ->
             acc.flatMap { next.mapRange(it) }
         }
     }
@@ -19,32 +19,31 @@ fun Almanac(input: String) = input.split("\n\n").map { section ->
         .filter { line -> line.any { it.isDigit() } }
         .map { line -> line.extractNumbers() }
 }.let { content ->
-    Almanac(seeds = content.first().first(), maps = content.drop(1).map { AlmanacMap(it) })
+    Almanac(seeds = content.first().first(), categoryMappers = content.drop(1).map { CategoryMapper(it) })
 }
 
 private fun String.extractNumbers() =
     split(" ").filter { words -> words.any { it.isDigit() } }.mapNotNull { it.toLongOrNull() }
 
-data class AlmanacMap(val mappings: List<AlmanacMapping> = emptyList()) {
-    fun mapItem(item: Long) = mappings.find { item in it }?.mapItem(item) ?: item
-
-    fun mapRange(range: LongRange): List<LongRange> {
-        val mappedRanges = mutableListOf<LongRange>()
-        var unMappedRanges = listOf(range)
-        mappings.filter { range in it }.forEach { mapping ->
-            unMappedRanges = unMappedRanges.flatMap { currentUnMappedRange ->
-                val (unMapped, mapped) = mapping.mapRange(currentUnMappedRange)
-                mapped?.let { mappedRanges.add(it) }
-                unMapped
+data class CategoryMapper(val rangeMappers: List<RangeMapper> = emptyList()) {
+    fun mapItem(item: Long) = rangeMappers.find { item in it }?.mapItem(item) ?: item
+    fun mapRange(range: LongRange) =
+        rangeMappers.filter { range in it }
+            .fold(listOf(range) to listOf<LongRange>()) { (unmappedRanges, mappedRanges), mapping ->
+                unmappedRanges
+                    .map(mapping::mapRange)
+                    .unzip()
+                    .let { (unmapped, mapped) ->
+                        unmapped.flatten() to (mappedRanges + mapped).filterNotNull()
+                    }
             }
-        }
-        return unMappedRanges + mappedRanges
-    }
+            .toList()
+            .reduce(List<LongRange>::plus)
 }
 
-fun AlmanacMap(input: List<List<Long>>) = AlmanacMap(input.map { AlmanacMapping(it) })
+fun CategoryMapper(input: List<List<Long>>) = CategoryMapper(input.map { RangeMapper(it) })
 
-data class AlmanacMapping(val destination: Long, val source: Long, val rangeLength: Long) {
+data class RangeMapper(val destination: Long, val source: Long, val rangeLength: Long) {
     private val change = destination - source
     private val sourceRange = source..<source + rangeLength
     operator fun contains(item: Long) = item in sourceRange
@@ -60,8 +59,8 @@ data class AlmanacMapping(val destination: Long, val source: Long, val rangeLeng
 
 }
 
-fun AlmanacMapping(mapping: List<Long>) = mapping.let { (dest, source, range) ->
-    AlmanacMapping(dest, source, range)
+fun RangeMapper(mapping: List<Long>) = mapping.let { (dest, source, range) ->
+    RangeMapper(dest, source, range)
 }
 
 fun main() {
