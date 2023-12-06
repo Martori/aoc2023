@@ -1,21 +1,12 @@
-
-data class Race(val duration: Long, val record: Long) {
-    private fun calculateDistance(timePressing: Long) = (duration - timePressing) * timePressing
-    private fun Long.beatsRecord() = calculateDistance(this) > record
-
-    val waysToBeatTheRecord = (1..<duration).let { range ->
-        val first = range.indexOfFirst { it.beatsRecord() }
-        val last = range.indexOfLast { it.beatsRecord() }
-        last - first + 1
-    }
-}
-
 fun List<String>.getRaces() = map { line -> line.split(" ").mapNotNull { it.toLongOrNull() } }
-    .zipWithNext { a, b -> a.zip(b) { duration, record -> Race(duration, record) } }
+    .zipWithNext { a, b -> a.zip(b) }
     .flatten()
 
 fun List<String>.getSingleRace() = mapNotNull { line -> line.filter { it.isDigit() }.toLongOrNull() }
-    .let { (duration, record) -> Race(duration, record) }
+    .zipWithNext()
+    .first()
+
+val Pair<Long, Long>.waysToBeatTheRecord get() = (1..<first).count { (first - it) * it > second }
 
 fun main() {
 
