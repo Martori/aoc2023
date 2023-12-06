@@ -1,5 +1,3 @@
-import java.time.Duration
-
 
 data class Race(val duration: Long, val record: Long) {
     private fun calculateDistance(timePressing: Long) = (duration - timePressing) * timePressing
