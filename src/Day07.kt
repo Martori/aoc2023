@@ -6,26 +6,18 @@ val jokerCardMap = mapOf(
 )
 
 enum class Kind {
-    Highest,
-    Pair,
-    DoublePair,
-    Three,
-    Full,
-    Poker,
-    RePoker
+    Highest, Pair, DoublePair, Three, Full, Poker, RePoker
 }
 
 data class Hand(val cards: String, val bid: Int, val jAsJoker: Boolean) : Comparable<Hand> {
     private val cardValues = cards.map { if (jAsJoker) jokerCardMap[it]!! else cardMap[it]!! }
-
-    private val kind = cards
+    private fun Char.isJoker() = jAsJoker && this == 'J'
+    private val jokers = cards.count { it.isJoker() }
+    private val kind = cards.filter { !it.isJoker() }
         .associateWith { card -> cards.count { it == card } }
-        .let { groups ->
-            val sortedDescending = groups.filter { !jAsJoker || it.key != 'J' }.values.sortedDescending()
-            val jokers = groups['J']?.takeIf { jAsJoker } ?: 0
-            Triple(sortedDescending.firstOrNull() ?: 0, (sortedDescending.getOrNull(1) ?: 0), jokers)
-        }
-        .let { (highest, second, jokers) ->
+        .values.sortedDescending()
+        .let { sorted -> sorted.getOrElse(0) { 0 } to sorted.getOrElse(1) { 0 } }
+        .let { (highest, second) ->
             when (highest + jokers) {
                 5 -> Kind.RePoker
                 4 -> Kind.Poker
@@ -34,7 +26,6 @@ data class Hand(val cards: String, val bid: Int, val jAsJoker: Boolean) : Compar
                 else -> Kind.Highest
             }
         }
-
 
     override fun compareTo(other: Hand) =
         if (kind != other.kind) kind.ordinal - other.kind.ordinal
