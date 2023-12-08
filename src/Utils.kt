@@ -22,31 +22,17 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
  */
 fun Any?.println() = println(this)
 
+fun String.asPair() = removeSurrounding("(", ")").split(", ").let { (f, s) -> f to s }
+fun String.endLessRepeat() = sequence { while (true) this.yieldAll(toList()) }
+fun <T> List<T>.endLessRepeat() = sequence { while (true) this.yieldAll(this@endLessRepeat) }
+
 infix fun Long.lcm(b: Long): Long {
     val larger = maxOf(this, b)
     val maxLcm = this * b
-    var lcm = larger
-    while (lcm <= maxLcm) {
-        if (lcm % this == 0L && lcm % b == 0L) {
-            return lcm
-        }
-        lcm += larger
-    }
-    return maxLcm
+    return (larger..maxLcm step larger).firstOrNull { it % this == 0L && it % b == 0L } ?: maxLcm
 }
 
-infix fun Int.lcm(b: Int): Int {
-    val larger = maxOf(this, b)
-    val maxLcm = this * b
-    var lcm = larger
-    while (lcm <= maxLcm) {
-        if (lcm % this == 0 && lcm % b == 0) {
-            return lcm
-        }
-        lcm += larger
-    }
-    return maxLcm
-}
+infix fun Int.lcm(b: Int): Int = (toLong() lcm b.toLong()).toInt()
 
 fun List<Int>.lcm() = reduce(Int::lcm)
 fun List<Long>.lcm() = reduce(Long::lcm)

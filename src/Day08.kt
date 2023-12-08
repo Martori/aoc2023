@@ -1,13 +1,10 @@
-private fun String.asPair() = removeSurrounding("(", ")").split(", ").let { (f, s) -> f to s }
-private fun String.endLessRepeat() = sequence { while (true) this.yieldAll(toList()) }
-private fun List<String>.parseMap() = associate { line -> line.split(" = ").let { (k, v) -> k to v.asPair() } }
-
 typealias Problem = Pair<Sequence<Char>, Map<String, Pair<String, String>>>
 
 val Problem.instructions get() = first
 val Problem.map get() = second
 
 fun main() {
+    fun List<String>.parseMap() = associate { line -> line.split(" = ").let { (k, v) -> k to v.asPair() } }
 
     fun List<String>.parseProblem() = let {
         it.first() to it.drop(2)
