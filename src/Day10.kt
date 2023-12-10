@@ -115,18 +115,21 @@ data class TileMap(
         type == TileType.NS -> !side to previous
         previous == null -> side to type
         else -> {
-            if (previous.connections.contains(Direction.N)) {
-                if (type.connections.contains(Direction.N)) side to null
-                else if (type.connections.contains(Direction.S)) {
-                    !side to null
-                } else side to previous
-            } else if (previous.connections.contains(Direction.S)) {
-                if (type.connections.contains(Direction.S)) side to null
-                else if (type.connections.contains(Direction.N)) {
-                    !side to null
-                } else side to previous
-            } else
-                side to previous
+            when {
+                previous.connections.contains(Direction.N) -> when {
+                    type.connections.contains(Direction.N) -> side to null
+                    type.connections.contains(Direction.S) -> !side to null
+                    else -> side to previous
+                }
+
+                previous.connections.contains(Direction.S) -> when {
+                    type.connections.contains(Direction.S) -> side to null
+                    type.connections.contains(Direction.N) -> !side to null
+                    else -> side to previous
+                }
+
+                else -> side to previous
+            }
         }
     }
 
