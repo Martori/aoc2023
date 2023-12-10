@@ -79,6 +79,21 @@ data class TileMap(
         matrix.flatten().filter { it.side == Side.Inside }
     }
 
+    private fun Tile.canMoveInDirection(direction: Direction) = position.move(direction) in getConnectingNeighbours().map { it.position }
+
+    private val startShape by lazy {
+        if (start.canMoveInDirection(Direction.N)) {
+            if (start.canMoveInDirection(Direction.S)) TileType.NS
+            else if (start.canMoveInDirection(Direction.E)) TileType.NE
+            else TileType.NW
+        } else if (start.canMoveInDirection(Direction.S)) {
+            if (start.canMoveInDirection(Direction.E)) TileType.SE
+            else TileType.SW
+        } else {
+            TileType.EW
+        }
+    }
+
     init {
         markSides()
     }
@@ -89,24 +104,24 @@ data class TileMap(
             var side = Side.Outside
             var previous: Direction? = null
             line.forEach { tile ->
+                val type = if (tile.type == TileType.Start) startShape else tile.type
                 if (tile.side == null) tile.side = side
                 if (tile.side == Side.Loop) {
-                    if (tile.type == TileType.NS) {
+                    if (type == TileType.NS) {
                         side = side.otherSide()
-                        previous = null
                     } else if (previous == null) {
-                        if (tile.type == TileType.NE || tile.type == TileType.NW) previous = Direction.N
-                        else if (tile.type == TileType.SE || tile.type == TileType.SW) previous = Direction.S
+                        if (type.connections.contains(Direction.N)) previous = Direction.N
+                        else if (type.connections.contains(Direction.S)) previous = Direction.S
                     } else {
                         if (previous == Direction.N) {
-                            if (tile.type == TileType.NE || tile.type == TileType.NW) previous = null
-                            else if (tile.type == TileType.SE || tile.type == TileType.SW) {
+                            if (type.connections.contains(Direction.N)) previous = null
+                            else if (type.connections.contains(Direction.S)) {
                                 side = side.otherSide()
                                 previous = null
                             }
                         } else {
-                            if (tile.type == TileType.SE || tile.type == TileType.SW) previous = null
-                            else if (tile.type == TileType.NE || tile.type == TileType.NW) {
+                            if (type.connections.contains(Direction.S)) previous = null
+                            else if (type.connections.contains(Direction.N)) {
                                 side = side.otherSide()
                                 previous = null
                             }
