@@ -102,16 +102,11 @@ data class TileMap(
     private fun markSides() {
         mainLoop.forEach { it.side = Side.Loop }
         matrix.forEach { line ->
-            var side = Side.Outside
-            var previous: TileType? = null
-            line.forEach { tile ->
-                val type = tile.actualType
-                if (tile.side == null) tile.side = side
-                if (tile.side == Side.Loop) {
-                    val p = computeNextStep(type, side, previous)
-                    side = p.first
-                    previous = p.second
-                }
+            line.fold<Tile, Pair<Side, TileType?>>(Side.Outside to null) { (side, previousType), tile ->
+                if (tile.side == null) {
+                    tile.side = side
+                    side to previousType
+                } else computeNextStep(tile.actualType, side, previousType)
             }
         }
     }
