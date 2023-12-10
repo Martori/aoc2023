@@ -93,6 +93,7 @@ data class TileMap(
             TileType.EW
         }
     }
+    private val Tile.actualType get() = if (type == TileType.Start) startShape else type
 
     init {
         markSides()
@@ -102,24 +103,23 @@ data class TileMap(
         mainLoop.forEach { it.side = Side.Loop }
         matrix.forEach { line ->
             var side = Side.Outside
-            var previous: Direction? = null
+            var previous: TileType? = null
             line.forEach { tile ->
-                val type = if (tile.type == TileType.Start) startShape else tile.type
+                val type = tile.actualType
                 if (tile.side == null) tile.side = side
                 if (tile.side == Side.Loop) {
                     if (type == TileType.NS) {
                         side = side.otherSide()
                     } else if (previous == null) {
-                        if (type.connections.contains(Direction.N)) previous = Direction.N
-                        else if (type.connections.contains(Direction.S)) previous = Direction.S
+                        previous = type
                     } else {
-                        if (previous == Direction.N) {
+                        if (previous!!.connections.contains(Direction.N)) {
                             if (type.connections.contains(Direction.N)) previous = null
                             else if (type.connections.contains(Direction.S)) {
                                 side = side.otherSide()
                                 previous = null
                             }
-                        } else {
+                        } else if (previous!!.connections.contains(Direction.S)) {
                             if (type.connections.contains(Direction.S)) previous = null
                             else if (type.connections.contains(Direction.N)) {
                                 side = side.otherSide()
