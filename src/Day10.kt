@@ -90,22 +90,26 @@ data class TileMap(
             var previous: Direction? = null
             line.forEach { tile ->
                 if (tile.side == null) tile.side = side
-                else if (tile.type == TileType.NS) side = side.otherSide()
-                else if (previous == null) {
-                    if (tile.type == TileType.NE || tile.type == TileType.NW) previous = Direction.N
-                    else if (tile.type == TileType.SE || tile.type == TileType.SW) previous = Direction.S
-                } else {
-                    if (previous == Direction.N) {
-                        if (tile.type == TileType.NE || tile.type == TileType.NW) previous = null
-                        else if (tile.type == TileType.SE || tile.type == TileType.SW) {
-                            side = side.otherSide()
-                            previous = null
-                        }
+                if (tile.side == Side.Loop) {
+                    if (tile.type == TileType.NS) {
+                        side = side.otherSide()
+                        previous = null
+                    } else if (previous == null) {
+                        if (tile.type == TileType.NE || tile.type == TileType.NW) previous = Direction.N
+                        else if (tile.type == TileType.SE || tile.type == TileType.SW) previous = Direction.S
                     } else {
-                        if (tile.type == TileType.SE || tile.type == TileType.SW) previous = null
-                        else if (tile.type == TileType.NE || tile.type == TileType.NW) {
-                            side = side.otherSide()
-                            previous = null
+                        if (previous == Direction.N) {
+                            if (tile.type == TileType.NE || tile.type == TileType.NW) previous = null
+                            else if (tile.type == TileType.SE || tile.type == TileType.SW) {
+                                side = side.otherSide()
+                                previous = null
+                            }
+                        } else {
+                            if (tile.type == TileType.SE || tile.type == TileType.SW) previous = null
+                            else if (tile.type == TileType.NE || tile.type == TileType.NW) {
+                                side = side.otherSide()
+                                previous = null
+                            }
                         }
                     }
                 }
