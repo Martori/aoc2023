@@ -32,7 +32,7 @@ enum class Side {
     Outside, Inside, Loop
 }
 
-fun Side.otherSide() = when (this) {
+operator fun Side.not() = when (this) {
     Side.Outside -> Side.Inside
     Side.Inside -> Side.Outside
     Side.Loop -> Side.Loop
@@ -108,27 +108,30 @@ data class TileMap(
                 val type = tile.actualType
                 if (tile.side == null) tile.side = side
                 if (tile.side == Side.Loop) {
-                    if (type == TileType.NS) {
-                        side = side.otherSide()
-                    } else if (previous == null) {
-                        previous = type
-                    } else {
-                        if (previous!!.connections.contains(Direction.N)) {
-                            if (type.connections.contains(Direction.N)) previous = null
-                            else if (type.connections.contains(Direction.S)) {
-                                side = side.otherSide()
-                                previous = null
-                            }
-                        } else if (previous!!.connections.contains(Direction.S)) {
-                            if (type.connections.contains(Direction.S)) previous = null
-                            else if (type.connections.contains(Direction.N)) {
-                                side = side.otherSide()
-                                previous = null
-                            }
-                        }
-                    }
+                    val p = computeNextStep(type, side, previous)
+                    side = p.first
+                    previous = p.second
                 }
             }
+        }
+    }
+
+    private fun computeNextStep(type: TileType, side: Side, previous: TileType?) = when {
+        type == TileType.NS -> !side to previous
+        previous == null -> side to type
+        else -> {
+            if (previous.connections.contains(Direction.N)) {
+                if (type.connections.contains(Direction.N)) side to null
+                else if (type.connections.contains(Direction.S)) {
+                    !side to null
+                } else side to previous
+            } else if (previous.connections.contains(Direction.S)) {
+                if (type.connections.contains(Direction.S)) side to null
+                else if (type.connections.contains(Direction.N)) {
+                    !side to null
+                } else side to previous
+            } else
+                side to previous
         }
     }
 
