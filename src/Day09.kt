@@ -23,7 +23,6 @@ fun main() {
     check(part2(testInput) == 2)
 
     val input = readInput("Day09")
-
     part1(input).println()
     part2(input).println()
 }
