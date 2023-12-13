@@ -44,3 +44,13 @@ fun List<Int>.lcm() = reduce(Int::lcm)
 fun List<Long>.lcm() = reduce(Long::lcm)
 
 fun Int.pow(i: Int) = toDouble().pow(i).toInt()
+
+fun <T> List<List<T>>.transpose(): List<List<T>> {
+    val result = (first().indices).map { mutableListOf<T>() }.toMutableList()
+    forEach { list -> result.zip(list).forEach { it.first.add(it.second) } }
+    return result
+}
+
+@JvmName("transposeString")
+fun List<String>.transpose(): List<String> =
+    map { it.toList() }.transpose().map { it.joinToString("") }
