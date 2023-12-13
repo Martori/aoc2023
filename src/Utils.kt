@@ -23,6 +23,7 @@ fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteA
  */
 fun Any?.println() = println(this)
 
+fun String.difference(other: String) = zip(other).count { (a, b) -> a != b }
 fun String.asPair() = removeSurrounding("(", ")").split(", ").let { (f, s) -> f to s }
 fun String.endLessRepeat() = sequence { while (true) this.yieldAll(toList()) }
 fun <T> List<T>.endLessRepeat() = sequence { while (true) this.yieldAll(this@endLessRepeat) }

@@ -1,14 +1,7 @@
-private fun AshPattern.reflectsAt(reflectPoint: Int) = (0..reflectPoint)
-    .map { index -> reflectPoint - index to reflectPoint + index + 1 }
-    .filter { (_, last) -> last <= lastIndex }
-    .all { (first, second) -> this[first] == this[second] }
-
 private fun AshPattern.smudgesToReflection(reflectPoint: Int) = (0..reflectPoint)
     .map { index -> reflectPoint - index to reflectPoint + index + 1 }
     .filter { (_, last) -> last <= lastIndex }
     .sumOf { (first, second) -> this[first].difference(this[second]) }
-
-private fun String.difference(other: String) = zip(other).count { (a, b) -> a != b }
 
 private fun AshPattern.horizontalReflectionPointWithSmudges(smudges: Int) = asSequence()
     .zipWithNext { a, b -> a.difference(b) }
